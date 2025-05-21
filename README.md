@@ -92,21 +92,22 @@ erDiagram
     tb_categories ||--o{ tb_products : classifica
     tb_users {
         bigint id PK
-        varchar(255) nome
-        varchar(255) usuario
-        varchar(255) senha
-        varchar(5000) foto
+        varchar(255) name
+        varchar(255) user
+        varchar(255) password
+        varchar(5000) photo
     }
     tb_categories {
         bigint id PK
-        varchar(255) tipo
+        varchar(255) type
     }
     tb_products {
         bigint id PK
-        varchar(255) nome
-        decimal preco
-        varchar(5000) foto
-        bigint categoria_id FK
+        varchar(255) name
+        decimal price
+        varchar(5000) image
+        varchar(1000) description
+        bigint category_id FK
     }
 ```
 
