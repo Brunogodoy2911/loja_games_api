@@ -71,12 +71,7 @@ public class ProductController {
       return ResponseEntity.notFound().build();
 
     return productRepository.findById(product.getId())
-        .map(response -> {
-          if (!productRepository.existsById(product.getId())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Produto não encontrado");
-          }
-          return ResponseEntity.ok(productRepository.save(product));
-        })
+        .map(existingProduct -> ResponseEntity.ok(productRepository.save(product)))
         .orElse(ResponseEntity.notFound().build());
   }
 
