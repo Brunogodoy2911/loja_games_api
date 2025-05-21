@@ -61,7 +61,7 @@ public class CategoryController {
   @PutMapping
   public ResponseEntity<Category> update(@Valid @RequestBody Category category) {
     if (category.getId() == null)
-      return ResponseEntity.notFound().build();
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
 
     return categoryRepository.findById(category.getId())
         .map(existingCategory -> ResponseEntity.ok(categoryRepository.save(category)))

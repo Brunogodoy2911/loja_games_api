@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.generations.loja_games_api.model.Product;
+import com.generations.loja_games_api.repository.CategoryRepository;
 import com.generations.loja_games_api.repository.ProductRepository;
 
 import jakarta.validation.Valid;
@@ -30,6 +31,9 @@ public class ProductController {
 
   @Autowired
   private ProductRepository productRepository;
+
+  @Autowired
+  private CategoryRepository categoryRepository;
 
   @GetMapping
   public ResponseEntity<List<Product>> getAll() {
@@ -60,18 +64,24 @@ public class ProductController {
 
   @PostMapping
   public ResponseEntity<Product> create(@Valid @RequestBody Product product) {
-    Product savedProduct = productRepository.save(product);
-    return ResponseEntity.status(HttpStatus.CREATED).body(savedProduct);
+    return productRepository.findById(product.getCategory().getId())
+        .map(response -> ResponseEntity.status(HttpStatus.CREATED).body(productRepository.save(product)))
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Categoria não encontrada", null));
   }
 
   @PutMapping
   public ResponseEntity<Product> update(@Valid @RequestBody Product product) {
 
     if (product.getId() == null)
-      return ResponseEntity.notFound().build();
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
 
     return productRepository.findById(product.getId())
-        .map(existingProduct -> ResponseEntity.ok(productRepository.save(product)))
+        .map(response -> {
+          if (!categoryRepository.existsById(product.getCategory().getId())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Categoria não encontrada!");
+          }
+          return ResponseEntity.ok(productRepository.save(product));
+        })
         .orElse(ResponseEntity.notFound().build());
   }
 
