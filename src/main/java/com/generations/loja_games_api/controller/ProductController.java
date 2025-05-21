@@ -62,6 +62,16 @@ public class ProductController {
     return ResponseEntity.ok(productRepository.findAllByPrice(price));
   }
 
+  @GetMapping("/price/min/{price}")
+  public ResponseEntity<List<Product>> getByPriceLessThan(@PathVariable BigDecimal price) {
+    return ResponseEntity.ok(productRepository.findAllByPriceLessThanEqual(price));
+  }
+
+  @GetMapping("/price/max/{price}")
+  public ResponseEntity<List<Product>> getByPriceGreaterThan(@PathVariable BigDecimal price) {
+    return ResponseEntity.ok(productRepository.findAllByPriceGreaterThanEqual(price));
+  }
+
   @PostMapping
   public ResponseEntity<Product> create(@Valid @RequestBody Product product) {
     return productRepository.findById(product.getCategory().getId())
