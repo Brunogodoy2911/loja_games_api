@@ -15,10 +15,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 
 import com.generations.loja_games_api.model.Category;
-import com.generations.loja_games_api.repository.CategoryRepository;
+import com.generations.loja_games_api.service.CategoryService;
 
 import jakarta.validation.Valid;
 
@@ -28,55 +27,44 @@ import jakarta.validation.Valid;
 public class CategoryController {
 
   @Autowired
-  private CategoryRepository categoryRepository;
+  private CategoryService categoryService;
 
   @GetMapping
   public ResponseEntity<List<Category>> getAll() {
-    return ResponseEntity.ok(categoryRepository.findAll());
+    return ResponseEntity.ok(categoryService.getAll());
   }
 
   @GetMapping("/{id}")
   public ResponseEntity<Category> getById(@PathVariable Long id) {
-    return categoryRepository.findById(id)
-        .map(ResponseEntity::ok)
-        .orElse(ResponseEntity.notFound().build());
+    return ResponseEntity.ok(categoryService.getById(id));
   }
 
   @GetMapping("/name/{name}")
   public ResponseEntity<List<Category>> getByName(@PathVariable String name) {
-    return ResponseEntity.ok(categoryRepository.findAllByNameContainingIgnoreCase(name));
+    return ResponseEntity.ok(categoryService.getByName(name));
   }
 
   @GetMapping("/description/{description}")
   public ResponseEntity<List<Category>> getByDescription(@PathVariable String description) {
-    return ResponseEntity.ok(categoryRepository.findAllByDescriptionContainingIgnoreCase(description));
+    return ResponseEntity.ok(categoryService.getByDescription(description));
   }
 
   @PostMapping
   public ResponseEntity<Category> create(@Valid @RequestBody Category category) {
-    Category savedCategory = categoryRepository.save(category);
+    Category savedCategory = categoryService.create(category);
     return ResponseEntity.status(HttpStatus.CREATED).body(savedCategory);
   }
 
   @PutMapping
   public ResponseEntity<Category> update(@Valid @RequestBody Category category) {
-    if (category.getId() == null)
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-
-    return categoryRepository.findById(category.getId())
-        .map(existingCategory -> ResponseEntity.ok(categoryRepository.save(category)))
-        .orElse(ResponseEntity.notFound().build());
+    return ResponseEntity.ok(categoryService.update(category));
   }
 
   @DeleteMapping("/{id}")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void delete(@PathVariable Long id) {
 
-    if (!categoryRepository.existsById(id)) {
-      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Categoria não encontrada");
-    }
-
-    categoryRepository.deleteById(id);
+    categoryService.delete(id);
   }
 
 }
