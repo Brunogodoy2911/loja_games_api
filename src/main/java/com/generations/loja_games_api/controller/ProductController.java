@@ -16,11 +16,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 
 import com.generations.loja_games_api.model.Product;
-import com.generations.loja_games_api.repository.CategoryRepository;
-import com.generations.loja_games_api.repository.ProductRepository;
+import com.generations.loja_games_api.service.ProductService;
 
 import jakarta.validation.Valid;
 
@@ -30,80 +28,58 @@ import jakarta.validation.Valid;
 public class ProductController {
 
   @Autowired
-  private ProductRepository productRepository;
-
-  @Autowired
-  private CategoryRepository categoryRepository;
+  private ProductService productService;
 
   @GetMapping
   public ResponseEntity<List<Product>> getAll() {
-    return ResponseEntity.ok(productRepository.findAll());
+    return ResponseEntity.ok(productService.getAll());
   }
 
   @GetMapping("/{id}")
   public ResponseEntity<Product> getById(@PathVariable Long id) {
-    return productRepository.findById(id)
-        .map(ResponseEntity::ok)
-        .orElse(ResponseEntity.notFound().build());
+    return ResponseEntity.ok(productService.getById(id));
   }
 
   @GetMapping("/name/{name}")
   public ResponseEntity<List<Product>> getByName(@PathVariable String name) {
-    return ResponseEntity.ok(productRepository.findAllByNameContainingIgnoreCase(name));
+    return ResponseEntity.ok(productService.getByName(name));
   }
 
   @GetMapping("/description/{description}")
   public ResponseEntity<List<Product>> getByDescription(@PathVariable String description) {
-    return ResponseEntity.ok(productRepository.findAllByDescriptionContainingIgnoreCase(description));
+    return ResponseEntity.ok(productService.getByDescription(description));
   }
 
   @GetMapping("/price/{price}")
   public ResponseEntity<List<Product>> getByPrice(@PathVariable BigDecimal price) {
-    return ResponseEntity.ok(productRepository.findAllByPrice(price));
+    return ResponseEntity.ok(productService.getByPrice(price));
   }
 
   @GetMapping("/price/min/{price}")
   public ResponseEntity<List<Product>> getByPriceLessThan(@PathVariable BigDecimal price) {
-    return ResponseEntity.ok(productRepository.findAllByPriceLessThanEqual(price));
+    return ResponseEntity.ok(productService.getByPriceLessThanEqual(price));
   }
 
   @GetMapping("/price/max/{price}")
   public ResponseEntity<List<Product>> getByPriceGreaterThan(@PathVariable BigDecimal price) {
-    return ResponseEntity.ok(productRepository.findAllByPriceGreaterThanEqual(price));
+    return ResponseEntity.ok(productService.getByPriceGreaterThanEqual(price));
   }
 
   @PostMapping
   public ResponseEntity<Product> create(@Valid @RequestBody Product product) {
-    return productRepository.findById(product.getCategory().getId())
-        .map(response -> ResponseEntity.status(HttpStatus.CREATED).body(productRepository.save(product)))
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Categoria não encontrada", null));
+    return ResponseEntity.status(HttpStatus.CREATED).body(productService.create(product));
   }
 
   @PutMapping
   public ResponseEntity<Product> update(@Valid @RequestBody Product product) {
 
-    if (product.getId() == null)
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-
-    return productRepository.findById(product.getId())
-        .map(response -> {
-          if (!categoryRepository.existsById(product.getCategory().getId())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Categoria não encontrada!");
-          }
-          return ResponseEntity.ok(productRepository.save(product));
-        })
-        .orElse(ResponseEntity.notFound().build());
+    return ResponseEntity.ok(productService.update(product));
   }
 
   @DeleteMapping("/{id}")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void delete(@PathVariable Long id) {
-
-    if (!productRepository.existsById(id)) {
-      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Produto não encontrado");
-    }
-
-    productRepository.deleteById(id);
+    productService.delete(id);
   }
 
 }
